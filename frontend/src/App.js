@@ -2,6 +2,7 @@ import "./App.css";
 import { TileLayer, MapContainer, Marker, Popup, Circle } from "react-leaflet";
 import L from "leaflet";
 import { usePosition } from "use-position";
+import { point, distance } from "@turf/turf";
 
 import styled from "styled-components";
 
@@ -47,6 +48,11 @@ const CLOUDS = gql`
   }
 `;
 
+function fromMyLocation(from, to) {
+  var options = { units: "kilometers" };
+  return distance(point(from), point(to), options).toFixed(2);
+}
+
 function Clouds(props) {
   const colors = {
     google: "green",
@@ -55,6 +61,8 @@ function Clouds(props) {
     do: "grey",
     upcloud: "yellow",
   };
+
+
   return props.data.clouds.map(
     ({ name, geoRegion, geoLatitude, geoLongitude, cloudProvider }) => (
       <Marker
@@ -62,7 +70,7 @@ function Clouds(props) {
         icon={cloudMarker(colors[cloudProvider])}
       >
         <Popup>
-          {name} <br /> {geoRegion}
+          {name} <br /> {geoRegion} <br /> {fromMyLocation(props.latlon, [geoLatitude, geoLongitude])} kilometers
         </Popup>
       </Marker>
     )
@@ -78,7 +86,7 @@ function Markers() {
 
   return (
     <>
-      <Clouds data={data} />
+      <Clouds data={data} latlon={[latitude, longitude]} />
       <Circle
         center={{ lat: latitude, lng: longitude }}
         color="red"
