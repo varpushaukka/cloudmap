@@ -4,23 +4,21 @@ from functools import lru_cache
 import http.client
 import json
 
-conn = http.client.HTTPSConnection("api.aiven.io")
-
-conn.request("GET", "/v1/clouds")
-
-res = conn.getresponse()
-
-data = res.read()
-
+#data from aiven REST api https://api.aiven.io/doc/#tag/Cloud, memoized with lru_cache
 @lru_cache(maxsize=1000)
 def list_clouds():
+    conn = http.client.HTTPSConnection("api.aiven.io")
+    conn.request("GET", "/v1/clouds")
+    res = conn.getresponse()
+    data = res.read()
     return json.loads(data).get("clouds")
 
-def get_cloud_by_name(name):
+def get_clouds_by_name(name):
     return [cloud for cloud in list_clouds() if name in cloud.get('cloud_name')]
 
 def get_cloud_by_region(region, cloudlist):
     return [cloud for cloud in cloudlist if region in cloud.get('geo_region')]
+
 
 class Cloud(ObjectType):
     name = String()
@@ -28,6 +26,7 @@ class Cloud(ObjectType):
     geo_longitude = Float()
     geo_latitude = Float()
     cloud_description = String()
+    cloud_provider = String()
 
     @staticmethod
     def resolve_name(parent, info):
@@ -49,12 +48,18 @@ class Cloud(ObjectType):
     def resolve_cloud_descrpition(parent, info):
         return parent["cloud_description"]
 
+    @staticmethod
+    def resolve_cloud_provider(parent, info):
+        cloud_name = parent["cloud_name"]
+        return cloud_name.split("-")[0]
+
 
 class Query(ObjectType):
     clouds = Field(List(Cloud), name=String(required=False), region=String(required=False))
+    cloud = Field(Cloud, name=String(required=True), distance=Float(required=True))
  
     @staticmethod
     def resolve_clouds(root, info, name="", region=None):
-        result = get_cloud_by_name(name=name)
+        result = get_clouds_by_name(name=name)
         if region: return get_cloud_by_region(region=region, cloudlist=result)
         return result
