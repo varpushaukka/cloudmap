@@ -1,5 +1,13 @@
 import "./App.css";
-import { TileLayer, MapContainer, Marker, Popup, Circle } from "react-leaflet";
+import {
+  TileLayer,
+  MapContainer,
+  Marker,
+  Popup,
+  Circle,
+  LayersControl,
+  LayerGroup,
+} from "react-leaflet";
 import L from "leaflet";
 import { usePosition } from "use-position";
 import { point, distance } from "@turf/turf";
@@ -62,17 +70,22 @@ function Clouds(props) {
     upcloud: "yellow",
   };
 
-
   return props.data.clouds.map(
     ({ name, geoRegion, geoLatitude, geoLongitude, cloudProvider }) => (
-      <Marker
-        position={[geoLatitude, geoLongitude]}
-        icon={cloudMarker(colors[cloudProvider])}
-      >
-        <Popup>
-          {name} <br /> {geoRegion} <br /> {fromMyLocation(props.latlon, [geoLatitude, geoLongitude])} kilometers
-        </Popup>
-      </Marker>
+      <>
+        {cloudProvider === props.provider && (
+          <Marker
+            position={[geoLatitude, geoLongitude]}
+            icon={cloudMarker(colors[cloudProvider])}
+          >
+            <Popup>
+              {name} <br /> {geoRegion} <br />{" "}
+              {fromMyLocation(props.latlon, [geoLatitude, geoLongitude])}{" "}
+              kilometers
+            </Popup>
+          </Marker>
+        )}
+      </>
     )
   );
 }
@@ -86,15 +99,49 @@ function Markers() {
 
   return (
     <>
-      <Clouds data={data} latlon={[latitude, longitude]} />
-      <Circle
-        center={{ lat: latitude, lng: longitude }}
-        color="red"
-        fillColor="red"
-        radius={5000}
-      >
-        <Popup>Your Location</Popup>
-      </Circle>
+      <LayersControl.Overlay name="google" checked>
+        <LayerGroup>
+          <Clouds
+            data={data}
+            provider="google"
+            latlon={[latitude, longitude]}
+          />
+        </LayerGroup>
+      </LayersControl.Overlay>
+      <LayersControl.Overlay name="aws" checked>
+        <LayerGroup>
+          <Clouds data={data} provider="aws" latlon={[latitude, longitude]} />
+        </LayerGroup>
+      </LayersControl.Overlay>
+      <LayersControl.Overlay name="azure" checked>
+        <LayerGroup>
+          <Clouds data={data} provider="azure" latlon={[latitude, longitude]} />
+        </LayerGroup>
+      </LayersControl.Overlay>
+      <LayersControl.Overlay name="digital ocean" checked>
+        <LayerGroup>
+          <Clouds data={data} provider="do" latlon={[latitude, longitude]} />
+        </LayerGroup>
+      </LayersControl.Overlay>
+      <LayersControl.Overlay name="upcloud" checked>
+        <LayerGroup>
+          <Clouds
+            data={data}
+            provider="upcloud"
+            latlon={[latitude, longitude]}
+          />
+        </LayerGroup>
+      </LayersControl.Overlay>
+      <LayersControl.Overlay name="Loaction" checked>
+        <Circle
+          center={{ lat: latitude, lng: longitude }}
+          color="red"
+          fillColor="red"
+          radius={5000}
+        >
+          <Popup>Your Location</Popup>
+        </Circle>
+      </LayersControl.Overlay>
     </>
   );
 }
@@ -104,11 +151,15 @@ function App() {
     <ApolloProvider client={client}>
       <div className="App">
         <Map center={[62, 24]} zoom={7}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <Markers />
+          <LayersControl position="topleft" collapsed={false} d>
+            <LayersControl.BaseLayer name="openstreetmap" checked={true}>
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+              />
+            </LayersControl.BaseLayer>
+            <Markers />
+          </LayersControl>
         </Map>
       </div>
     </ApolloProvider>
