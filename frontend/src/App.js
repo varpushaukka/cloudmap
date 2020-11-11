@@ -92,10 +92,12 @@ function Clouds(props) {
 
 function Markers() {
   const { loading, error, data } = useQuery(CLOUDS);
-  const { latitude, longitude } = usePosition();
+  var { latitude, longitude } = usePosition();
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
+
+  if (!latitude) {latitude = 60.17; longitude = 24.93}
 
   return (
     <>
