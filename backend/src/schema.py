@@ -16,7 +16,7 @@ def list_clouds():
 def get_clouds_by_name(name):
     return [cloud for cloud in list_clouds() if name in cloud.get('cloud_name')]
 
-def get_cloud_by_region(region, cloudlist):
+def get_clouds_by_region(region, cloudlist):
     return [cloud for cloud in cloudlist if region in cloud.get('geo_region')]
 
 
@@ -61,5 +61,5 @@ class Query(ObjectType):
     @staticmethod
     def resolve_clouds(root, info, name="", region=None):
         result = get_clouds_by_name(name=name)
-        if region: return get_cloud_by_region(region=region, cloudlist=result)
+        if region: return get_clouds_by_region(region=region, cloudlist=result)
         return result

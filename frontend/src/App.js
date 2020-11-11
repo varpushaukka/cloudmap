@@ -97,7 +97,10 @@ function Markers() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
 
-  if (!latitude) {latitude = 60.17; longitude = 24.93}
+  if (!latitude) {
+    latitude = 60.17;
+    longitude = 24.93;
+  }
 
   return (
     <>
@@ -134,16 +137,14 @@ function Markers() {
           />
         </LayerGroup>
       </LayersControl.Overlay>
-      <LayersControl.Overlay name="Loaction" checked>
-        <Circle
-          center={{ lat: latitude, lng: longitude }}
-          color="red"
-          fillColor="red"
-          radius={5000}
-        >
-          <Popup>Your Location</Popup>
-        </Circle>
-      </LayersControl.Overlay>
+      <Circle
+        center={{ lat: latitude, lng: longitude }}
+        color="red"
+        fillColor="red"
+        radius={5000}
+      >
+        <Popup>Your Location</Popup>
+      </Circle>
     </>
   );
 }
@@ -152,7 +153,7 @@ function App() {
   return (
     <ApolloProvider client={client}>
       <div className="App">
-        <Map center={[62, 24]} zoom={7}>
+        <Map center={[43, 16]} zoom={3}>
           <LayersControl position="topleft" collapsed={false} d>
             <LayersControl.BaseLayer name="openstreetmap" checked={true}>
               <TileLayer
