@@ -8,7 +8,8 @@ services:
     ports:
       - 80:80
   backend:
+    image: varpushaukka/cloudmap-backend:latest
     build: ./backend
   frontend:
-    image: cloudmap-frontend:prod
+    image: varpushaukka/cloudmap-frontend:latest
     build: ./frontend
